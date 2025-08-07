@@ -1,0 +1,34 @@
+# Binaries
+/venue-searchpos
+
+# Build output
+/bin/
+/build/
+/dist/
+
+# Dependency directories
+/vendor/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Go modules
+/go.sum
+
+# Logs
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# Environment files
+.env
+.env.*
+
+# Test output
+*.out
+
+# Docker
