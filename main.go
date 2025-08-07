@@ -1,7 +1,8 @@
-package main
+package function
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,7 +17,7 @@ import (
 
 var collection *mongo.Collection
 
-func main() {
+func init() {
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
 		log.Fatal("MONGO_URI environment variable is not set")
@@ -36,7 +37,7 @@ func main() {
 	r.GET("/nearby", getNearbyStadiums)
 	r.GET("/inside", isPointInsideStadium)
 
-	r.Run(":8080")
+	r.Run("0.0.0.0:8080")
 }
 
 // GET /nearby?long=2.15&lat=41.38&maxDistance=5000
@@ -108,4 +109,9 @@ func isPointInsideStadium(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"inside": true, "venue": result["name"]})
+}
+
+// EntryPoint is the function entry for HTTP request
+func EntryPoint(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Running venue-searchpos-service!")
 }

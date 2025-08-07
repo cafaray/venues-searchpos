@@ -32,3 +32,9 @@ Thumbs.db
 *.out
 
 # Docker
+# Dockerfile
+Dockerfile.*
+
+# Shell scripts
+*.sh
+*.bash
