@@ -1,0 +1,52 @@
+name: Deploy Venues Service to Cloud Run
+
+on:
+  # push:
+  #   branches: [ main ]
+  #   paths: [ 'venues-searchpos/**' ]
+  workflow_dispatch:
+  
+env:
+  PROJECT_ID: lfs261-cicd-304112
+  SERVICE_NAME: venues-searchpos
+  REGION: europe-southwest1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_MINE_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Prepare Go modules
+      working-directory: ./
+      run: go mod tidy
+
+    - name: Deploy to Cloud Run
+      working-directory: ./
+      run: |
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --source=. \
+          --platform=managed \
+          --region=${{ env.REGION }} \
+          --allow-unauthenticated \
+          --port=8080 \
+          --memory=512Mi \
+          --cpu=1 \
+          --execution-environment=gen2 \
+          --update-secrets="MONGO_URI=projects/616245089133/secrets/mongodb-supporters-uri:latest" \
+          --project=${{ env.PROJECT_ID }}
