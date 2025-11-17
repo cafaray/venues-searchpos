@@ -5,10 +5,15 @@ on:
   #   branches: [ main ]
   #   paths: [ 'venues-searchpos/**' ]
   workflow_dispatch:
+    inputs:
+      service-name: 
+        description: "Name of the service"
+        type: string
+        default: venues-searchpos 
   
 env:
   PROJECT_ID: lfs261-cicd-304112
-  SERVICE_NAME: venues-searchpos
+  # SERVICE_NAME: venues-searchpos
   REGION: europe-southwest1
 
 jobs:
@@ -39,7 +44,7 @@ jobs:
     - name: Deploy to Cloud Run
       working-directory: ./
       run: |
-        gcloud run deploy ${{ env.SERVICE_NAME }} \
+        gcloud run deploy ${{ inputs.service-name }} \
           --source=. \
           --platform=managed \
           --region=${{ env.REGION }} \
