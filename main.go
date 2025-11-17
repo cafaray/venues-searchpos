@@ -1,4 +1,4 @@
-package function
+package main
 
 import (
 	"context"
@@ -18,26 +18,50 @@ import (
 var collection *mongo.Collection
 
 func init() {
+	log.Println("🚀 Starting venues-searchpos service...")
+	
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		log.Fatal("MONGO_URI environment variable is not set")
+		log.Fatal("❌ MONGO_URI environment variable is not set")
 	}
+	log.Printf("✅ MONGO_URI found: %s", mongoURI[:20]+"...")
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	log.Println("🔌 Connecting to MongoDB...")
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("❌ MongoDB connection failed: %v", err)
 	}
+	log.Println("✅ MongoDB connected successfully")
 
 	collection = client.Database("supporters").Collection("venues")
+	log.Println("✅ Collection initialized")
+}
 
+func main() {
+	log.Println("🌐 Setting up HTTP server...")
+	
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("🔌 Using port: %s", port)
+	
 	r := gin.Default()
 
 	r.GET("/nearby", getNearbyStadiums)
 	r.GET("/inside", isPointInsideStadium)
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "healthy"})
+	})
 
-	r.Run("0.0.0.0:8080")
+	log.Printf("🚀 Starting server on 0.0.0.0:%s", port)
+	err := r.Run("0.0.0.0:" + port)
+	if err != nil {
+		log.Fatalf("❌ Server failed to start: %v", err)
+	}
 }
 
 // GET /nearby?long=2.15&lat=41.38&maxDistance=5000

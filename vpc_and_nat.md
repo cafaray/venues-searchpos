@@ -7,19 +7,25 @@ MongoDB Atlas does not permit an open all connection to the database. To connect
 ## Reserve a Static IP
 
 ```bash
-gcloud compute addresses create venue-searchpos-db-ip \
+gcloud compute addresses create venue-searchpos-mongo-ip \
   --region=europe-southwest1
 ```
 
 Check the reserved IP:
 
 ```bash
-gcloud compute addresses describe venue-searchpos-db-ip \
+gcloud compute addresses describe venue-searchpos-mongo-ip \
   --region=europe-southwest1 \
   --format="get(address)"
 ```
 
+Output:
+
+`34.175.240.54`
+
 ## Create a VPC Network
+
+Use the `default` VPC network or, create a new one:
 
 ```bash
 gcloud compute networks create venue-searchpos-vpc \
@@ -40,18 +46,35 @@ gcloud compute networks subnets create venue-seachpos-vpc-subnet \
 ## Create a VPC Serverless Access Connector
 
 ```bash
+# gcloud compute networks vpc-access connectors create venue-searchpos-connector \
+#   --region=europe-southwest1 \
+#   --network=venue-searchpos-vpc \
+#   --range=10.8.0.0/28
+
 gcloud compute networks vpc-access connectors create venue-searchpos-connector \
   --region=europe-southwest1 \
-  --network=venue-searchpos-vpc \
+  --network=default \
   --range=10.8.0.0/28
+
+Create request issued for: [venue-searchpos-connector]
+Waiting for operation [projects/lfs261-cicd-304112/locations/europe-southwest1/operations/79ea1692-c485-453e-b9fe-9f8a43506a0b] to complete...done.                      
+Created connector [venue-searchpos-connector].
 ```
 
 ### Create a Cloud Router
 
 ```bash
+# gcloud compute routers create venue-searchpos-router \
+#   --network=venue-searchpos-vpc \
+#   --region=europe-southwest1
+
 gcloud compute routers create venue-searchpos-router \
-  --network=venue-searchpos-vpc \
+  --network=default \
   --region=europe-southwest1
+
+NAME                    REGION             NETWORK
+venue-searchpos-router  europe-southwest1  default
+
 ```
 
 ## Set Up Cloud NAT with the Static IP
@@ -60,10 +83,11 @@ gcloud compute routers create venue-searchpos-router \
 gcloud compute routers nats create venue-searchpos-nat \
   --router=venue-searchpos-router \
   --region=europe-southwest1 \
-  --nat-external-ip-pool=venue-searchpos-db-ip \
   --auto-allocate-nat-external-ips \
   --nat-all-subnet-ip-ranges \
   --enable-logging
+
+Creating NAT [venue-searchpos-nat] in router [venue-searchpos-router]...done.
 ```
 
 ## Deploy Your Cloud Function Using the VPC Connector
@@ -71,7 +95,7 @@ gcloud compute routers nats create venue-searchpos-nat \
 ```bash
 gcloud functions deploy venue-searchpos-service \
   --region=europe-southwest1 \
-  --runtime go121 \
+  --runtime go123 \
   --trigger-http \
   --entry-point=EntryPoint \
   --vpc-connector=venue-searchpos-connector \
