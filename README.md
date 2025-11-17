@@ -71,3 +71,38 @@ The application will be accessible at `http://localhost:8080`.
 
 ### License
 This project is licensed under the MIT License.
+
+# Perimissions for SA 
+
+> Gitaction
+> The service account gitaction@lfs261-cicd-304112.iam.gserviceaccount.com needs additional permissions. You need to grant these roles to the service account in the Google Cloud Console:
+> Required IAM Roles:
+> Cloud Run Admin - To deploy services
+> Cloud Build Editor - To build from source
+> Storage Admin - For build artifacts
+> Secret Manager Secret Accessor - To access MongoDB URI secret
+> Service Account User - To use service accounts
+
+# Get the Cloud Build service account
+PROJECT_NUMBER=$(gcloud projects describe lfs261-cicd-304112 --format="value(projectNumber)")
+
+# Grant Cloud Run Admin to Cloud Build service account
+gcloud projects add-iam-policy-binding lfs261-cicd-304112 \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+# Get the Cloud Build service account
+PROJECT_NUMBER=$(gcloud projects describe lfs261-cicd-304112 --format="value(projectNumber)")
+
+# Grant Cloud Run Admin to Cloud Build service account
+gcloud projects add-iam-policy-binding lfs261-cicd-304112 \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+```bash
+roles/run.admin
+roles/cloudbuild.builds.editor
+roles/storage.admin
+roles/secretmanager.secretAccessor
+roles/iam.serviceAccountUser
+```
